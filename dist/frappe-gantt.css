@@ -104,6 +104,7 @@
     background: rgba(0, 0, 0, 0.8);
     padding: 0;
     color: #959da5;
+    pointer-events: none !important;
     border-radius: 3px; }
     .gantt-container .popup-wrapper .title {
       border-bottom: 3px solid #a3a3ff;

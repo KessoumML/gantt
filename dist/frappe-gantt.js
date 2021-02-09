@@ -712,6 +712,7 @@ class Bar {
         this.update_handle_position();
         this.update_progressbar_position();
         this.update_arrow_position();
+        this.gantt.popup_wrapper.style.left = this.$bar.ox + this.$bar.owidth + this.$bar.finaldx + 10 + "px";
     }
 
     date_changed() {
@@ -855,7 +856,7 @@ class Bar {
                 label_img.setAttribute('x', bar.getX() + bar.getWidth() + 5);
             } else {
                 label.classList.remove('big');
-                label.setAttribute('x', bar.getX() + bar.getWidth() / 2);
+                label.setAttribute('x', bar.getX() + bar.getWidth() / 2 + 2);
                 var offset = Math.ceil((label.getBBox().width / 2) + label_img.getBBox().width);
                 label_img.setAttribute('x', bar.getX() + bar.getWidth() / 2 - offset);
             }
