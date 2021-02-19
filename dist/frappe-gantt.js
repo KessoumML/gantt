@@ -570,7 +570,7 @@ class Bar {
 
     draw_label() {
         createSVG('text', {
-            x: this.x + this.width / 2,
+            x: this.x,
             y: this.y + this.height / 2,
             innerHTML: this.task.name,
             class: 'bar-label',
@@ -579,11 +579,11 @@ class Bar {
         if (this.task.image) {
             createSVG('foreignObject', {
                 x: this.x + this.width / 2,
-                y: this.y,
+                y: this.y + 2,
                 height: this.height,
                 width: this.height,
                 innerHTML: '<img src="' + this.task.image + '" style="border-radius: 50%; pointer-events: none;" height="' +
-                    this.height + '">',
+                    (this.height - 5) + '">',
                 class: 'bar-label-img',
                 append_to: this.bar_group
             });
@@ -856,9 +856,12 @@ class Bar {
                 label_img.setAttribute('x', bar.getX() + bar.getWidth() + 5);
             } else {
                 label.classList.remove('big');
-                label.setAttribute('x', bar.getX() + bar.getWidth() / 2 + 2);
-                var offset = Math.ceil((label.getBBox().width / 2) + label_img.getBBox().width);
-                label_img.setAttribute('x', bar.getX() + bar.getWidth() / 2 - offset);
+                label.setAttribute('x', bar.getX() + label.getBBox().width / 2 + label_img.getBBox().width + 7 );
+                var offset = Math.ceil(label.getBBox().width / 2);
+                label_img.setAttribute('x', bar.getX() + (label.getBBox().width / 2) - offset + 5);
+                // label.setAttribute('x', bar.getX() + bar.getWidth() / 2 + 2);
+                // var offset = Math.ceil((label.getBBox().width / 2) + label_img.getBBox().width)
+                // label_img.setAttribute('x', bar.getX() + bar.getWidth() / 2 - offset);
             }
         } else {
             if (label.getBBox().width > bar.getWidth()) {
@@ -866,7 +869,7 @@ class Bar {
                 label.setAttribute('x', bar.getX() + bar.getWidth() + 5);
             } else {
                 label.classList.remove('big');
-                label.setAttribute('x', bar.getX() + bar.getWidth() / 2);
+                label.setAttribute('x', bar.getX() + label.getBBox().width / 2 + 5);
             }
         }
     }
