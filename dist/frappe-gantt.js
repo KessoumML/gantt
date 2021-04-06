@@ -544,8 +544,9 @@ class Bar {
             class: 'bar',
             append_to: this.bar_group
         });
-
-        animateSVG(this.$bar, 'width', 0, this.width);
+        if (this.gantt.options.animate) {
+            animateSVG(this.$bar, 'width', 0, this.width);
+        }
 
         if (this.invalid) {
             this.$bar.classList.add('bar-invalid');
@@ -565,17 +566,32 @@ class Bar {
             append_to: this.bar_group
         });
 
-        animateSVG(this.$bar_progress, 'width', 0, this.progress_width);
+        if (this.gantt.options.animate) {
+            animateSVG(this.$bar_progress, 'width', 0, this.progress_width);
+        }
     }
 
     draw_label() {
         createSVG('text', {
-            x: this.x + this.width / 2,
+            x: this.x,
             y: this.y + this.height / 2,
             innerHTML: this.task.name,
             class: 'bar-label',
             append_to: this.bar_group
         });
+        if (this.task.image) {
+            createSVG('foreignObject', {
+                x: this.x + this.width / 2,
+                y: this.y + 2,
+                height: this.height,
+                width: this.height,
+                innerHTML: '<img src="' + this.task.image + '" style="border-radius: 50%; pointer-events: none;" height="' +
+                    (this.height - 5) + '">',
+                class: 'bar-label-img',
+                append_to: this.bar_group
+            });
+        }
+
         // labels get BBox in the next tick
         requestAnimationFrame(() => this.update_label_position());
     }
@@ -646,7 +662,7 @@ class Bar {
             this.group.classList.add('active');
         });
 
-        $.on(this.group, 'dblclick', e => {
+        $.on(this.group, 'click', e => {
             if (this.action_completed) {
                 // just finished a move action, wait for a few seconds
                 return;
@@ -699,6 +715,7 @@ class Bar {
         this.update_handle_position();
         this.update_progressbar_position();
         this.update_arrow_position();
+        this.gantt.popup_wrapper.style.left = this.$bar.ox + this.$bar.owidth + this.$bar.finaldx + 10 + "px";
     }
 
     date_changed() {
@@ -833,14 +850,30 @@ class Bar {
 
     update_label_position() {
         const bar = this.$bar,
-            label = this.group.querySelector('.bar-label');
-
-        if (label.getBBox().width > bar.getWidth()) {
-            label.classList.add('big');
-            label.setAttribute('x', bar.getX() + bar.getWidth() + 5);
+            label = this.group.querySelector('.bar-label'),
+            label_img = this.group.querySelector('.bar-label-img');
+        if (label_img) {
+            if (label.getBBox().width / 2 + label_img.getBBox().width > bar.getWidth() / 2) {
+                label.classList.add('big');
+                label.setAttribute('x', bar.getX() + bar.getWidth() + 7 + label_img.getBBox().width);
+                label_img.setAttribute('x', bar.getX() + bar.getWidth() + 5);
+            } else {
+                label.classList.remove('big');
+                label.setAttribute('x', bar.getX() + label.getBBox().width / 2 + label_img.getBBox().width + 7 );
+                var offset = Math.ceil(label.getBBox().width / 2);
+                label_img.setAttribute('x', bar.getX() + (label.getBBox().width / 2) - offset + 5);
+                // label.setAttribute('x', bar.getX() + bar.getWidth() / 2 + 2);
+                // var offset = Math.ceil((label.getBBox().width / 2) + label_img.getBBox().width)
+                // label_img.setAttribute('x', bar.getX() + bar.getWidth() / 2 - offset);
+            }
         } else {
-            label.classList.remove('big');
-            label.setAttribute('x', bar.getX() + bar.getWidth() / 2);
+            if (label.getBBox().width > bar.getWidth()) {
+                label.classList.add('big');
+                label.setAttribute('x', bar.getX() + bar.getWidth() + 5);
+            } else {
+                label.classList.remove('big');
+                label.setAttribute('x', bar.getX() + label.getBBox().width / 2 + 5);
+            }
         }
     }
 
@@ -1109,7 +1142,8 @@ class Gantt {
             date_format: 'YYYY-MM-DD',
             popup_trigger: 'click',
             custom_popup_html: null,
-            language: 'en'
+            language: 'en',
+            animate: true
         };
         this.options = Object.assign({}, default_options, options);
     }
