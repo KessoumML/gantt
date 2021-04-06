@@ -544,8 +544,9 @@ class Bar {
             class: 'bar',
             append_to: this.bar_group
         });
-
-        animateSVG(this.$bar, 'width', 0, this.width);
+        if (this.gantt.options.animate) {
+            animateSVG(this.$bar, 'width', 0, this.width);
+        }
 
         if (this.invalid) {
             this.$bar.classList.add('bar-invalid');
@@ -565,7 +566,9 @@ class Bar {
             append_to: this.bar_group
         });
 
-        animateSVG(this.$bar_progress, 'width', 0, this.progress_width);
+        if (this.gantt.options.animate) {
+            animateSVG(this.$bar_progress, 'width', 0, this.progress_width);
+        }
     }
 
     draw_label() {
@@ -1139,7 +1142,8 @@ class Gantt {
             date_format: 'YYYY-MM-DD',
             popup_trigger: 'click',
             custom_popup_html: null,
-            language: 'en'
+            language: 'en',
+            animate: true
         };
         this.options = Object.assign({}, default_options, options);
     }

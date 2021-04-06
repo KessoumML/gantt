@@ -84,8 +84,9 @@ export default class Bar {
             class: 'bar',
             append_to: this.bar_group
         });
-
-        animateSVG(this.$bar, 'width', 0, this.width);
+        if (this.gantt.options.animate) {
+            animateSVG(this.$bar, 'width', 0, this.width);
+        }
 
         if (this.invalid) {
             this.$bar.classList.add('bar-invalid');
@@ -105,7 +106,9 @@ export default class Bar {
             append_to: this.bar_group
         });
 
-        animateSVG(this.$bar_progress, 'width', 0, this.progress_width);
+        if (this.gantt.options.animate) {
+            animateSVG(this.$bar_progress, 'width', 0, this.progress_width);
+        }
     }
 
     draw_label() {
