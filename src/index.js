@@ -734,10 +734,6 @@ export default class Gantt {
             is_resizing_right = false;
         });
 
-        $.on(document, 'scroll', e => {
-            this.layers.date.setAttribute('transform', 'translate(0,'+ (Math.max(0, -(this.$container.getBoundingClientRect().y))) +')');
-        });
-
         $.on(this.$svg, 'mouseup', e => {
             this.bar_being_dragged = null;
             bars.forEach(bar => {
