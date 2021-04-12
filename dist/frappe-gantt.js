@@ -234,6 +234,11 @@ var date_utils = {
         return new Date();
     },
 
+    getNumberOfWeek(date) {
+        const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+        const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+        return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    },
     add(date, qty, scale) {
         qty = parseInt(qty, 10);
         const vals = [
@@ -1432,7 +1437,7 @@ class Gantt {
         let tick_height =
             (this.options.bar_height + this.options.padding) *
             this.tasks.length;
-
+        const today = date_utils.today();
         for (let date of this.dates) {
             let tick_class = 'tick';
             // thick tick for monday
@@ -1451,13 +1456,31 @@ class Gantt {
             if (this.view_is(VIEW_MODE.MONTH) && (date.getMonth() + 1) % 3 === 0) {
                 tick_class += ' thick';
             }
-
             createSVG('path', {
                 d: `M ${tick_x} ${tick_y} v ${tick_height}`,
                 class: tick_class,
                 append_to: this.layers.grid
             });
-
+            if (this.view_is(VIEW_MODE.MONTH) && today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth()) {
+                let today_tick_x = tick_x;
+                today_tick_x += (today.getDate() - 1) * this.options.column_width / 30;
+                createSVG('path', {
+                    d: `M ${today_tick_x} ${tick_y} v ${tick_height}`,
+                    class: tick_class + ' today-tick-highlight',
+                    append_to: this.layers.grid
+                });
+            }
+            if (this.view_is(VIEW_MODE.WEEK) && today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth() &&
+                date_utils.getNumberOfWeek(today) === date_utils.getNumberOfWeek(date)) {
+                let today_tick_x = tick_x;
+                const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
+                today_tick_x += diffDays * this.options.column_width / 7;
+                createSVG('path', {
+                    d: `M ${today_tick_x} ${tick_y} v ${tick_height}`,
+                    class: tick_class + ' today-tick-highlight',
+                    append_to: this.layers.grid
+                });
+            }
             if (this.view_is(VIEW_MODE.MONTH)) {
                 tick_x +=
                     date_utils.get_days_in_month(date) *
@@ -1788,10 +1811,6 @@ class Gantt {
             is_dragging = false;
             is_resizing_left = false;
             is_resizing_right = false;
-        });
-
-        $.on(document, 'scroll', e => {
-            this.layers.date.setAttribute('transform', 'translate(0,'+ (Math.max(0, -(this.$container.getBoundingClientRect().y))) +')');
         });
 
         $.on(this.$svg, 'mouseup', e => {
