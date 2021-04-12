@@ -405,7 +405,7 @@ export default class Gantt {
                 today_tick_x += (today.getDate() - 1) * this.options.column_width / 30;
                 createSVG('path', {
                     d: `M ${today_tick_x} ${tick_y} v ${tick_height}`,
-                    class: tick_class + ' today-tick-highlight',
+                    class: 'today-tick-highlight',
                     append_to: this.layers.grid
                 });
             }
@@ -413,10 +413,11 @@ export default class Gantt {
                 date_utils.getNumberOfWeek(today) === date_utils.getNumberOfWeek(date)) {
                 let today_tick_x = tick_x;
                 const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
-                today_tick_x += diffDays * this.options.column_width / 7;
+                const sign = (today>=date) ? 1 : -1;
+                today_tick_x += sign * diffDays * this.options.column_width / 7;
                 createSVG('path', {
                     d: `M ${today_tick_x} ${tick_y} v ${tick_height}`,
-                    class: tick_class + ' today-tick-highlight',
+                    class: 'today-tick-highlight',
                     append_to: this.layers.grid
                 });
             }
