@@ -200,7 +200,7 @@ export default class Gantt {
             this.options.column_width = 120;
         } else if (view_mode === VIEW_MODE.YEAR) {
             this.options.step = 24 * 365;
-            this.options.column_width = 120;
+            this.options.column_width = 260;
         }
     }
 
