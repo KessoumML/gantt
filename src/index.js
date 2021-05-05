@@ -597,7 +597,7 @@ export default class Gantt {
                 date.getMonth() !== last_date.getMonth()
                     ? date_utils.format(date, 'MMMM', this.options.language)
                     : '',
-            Week_upper: date_utils.getNumberOfWeek(date),
+            Week_upper: 'S ' + date_utils.getNumberOfWeek(date),
             Month_upper:
                 date.getFullYear() !== last_date.getFullYear()
                     ? date_utils.format(date, 'YYYY', this.options.language)
