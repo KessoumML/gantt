@@ -87,7 +87,8 @@ export default class Gantt {
             popup_trigger: 'click',
             custom_popup_html: null,
             language: 'en',
-            animate: true
+            animate: true,
+            weekend_highlight: [VIEW_MODE.DAY, VIEW_MODE.WEEK, VIEW_MODE.MONTH]
         };
         this.options = Object.assign({}, default_options, options);
     }
@@ -379,7 +380,9 @@ export default class Gantt {
             (this.options.bar_height + this.options.padding) *
             this.tasks.length;
         const today = date_utils.today();
-        for (let date of this.dates) {
+
+        for (let i = 0; i < this.dates.length; i++) {
+            let date = this.dates[i];
             let tick_class = 'tick';
             // thick tick for monday
             if (this.view_is(VIEW_MODE.DAY) && date.getDate() === 1) {
@@ -402,7 +405,8 @@ export default class Gantt {
                 class: tick_class,
                 append_to: this.layers.grid
             });
-            if (this.view_is(VIEW_MODE.MONTH) && today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth()) {
+            if (this.view_is(VIEW_MODE.MONTH)) {
+                if (today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth()) {
                 let today_tick_x = tick_x;
                 today_tick_x += (today.getDate() - 1) * this.options.column_width / 30;
                 createSVG('path', {
@@ -410,18 +414,54 @@ export default class Gantt {
                     class: 'today-tick-highlight',
                     append_to: this.layers.grid
                 });
+                }
+
+                if (this.options.weekend_highlight.includes(VIEW_MODE.MONTH) && i < this.dates.length - 1) {
+                    for (let d = new Date(date); d < this.dates[i+1]; d.setDate(d.getDate() + 1)) {
+                        let isWeekend = (d.getDay() === 0 || d.getDay() === 6 );
+
+                        if (isWeekend) {
+                            let weekend_tick_x = tick_x;
+                            weekend_tick_x += (d.getDate() - 1) * this.options.column_width / 30;
+                            createSVG('path', {
+                                d: `M ${weekend_tick_x} ${tick_y} v ${tick_height}`,
+                                class: 'weekend-tick-highlight',
+                                append_to: this.layers.grid
+                            });
+                        }
+                    }
+                }
             }
-            if (this.view_is(VIEW_MODE.WEEK) && today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth() &&
-                date_utils.getNumberOfWeek(today) === date_utils.getNumberOfWeek(date)) {
-                let today_tick_x = tick_x;
-                const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
-                const sign = (today>=date) ? 1 : -1;
-                today_tick_x += sign * diffDays * this.options.column_width / 7;
-                createSVG('path', {
-                    d: `M ${today_tick_x} ${tick_y} v ${tick_height}`,
-                    class: 'today-tick-highlight',
-                    append_to: this.layers.grid
-                });
+            if (this.view_is(VIEW_MODE.WEEK)) {
+                if (today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth() &&
+                    date_utils.getNumberOfWeek(today) === date_utils.getNumberOfWeek(date)) {
+                    let today_tick_x = tick_x;
+                    const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
+                    const sign = (today >= date) ? 1 : -1;
+                    today_tick_x += sign * diffDays * this.options.column_width / 7;
+                    createSVG('path', {
+                        d: `M ${today_tick_x} ${tick_y} v ${tick_height}`,
+                        class: 'today-tick-highlight',
+                        append_to: this.layers.grid
+                    });
+                }
+                if (this.options.weekend_highlight.includes(VIEW_MODE.WEEK) && i < this.dates.length - 1) {
+                    for (let d = new Date(date); d < this.dates[i+1]; d.setDate(d.getDate() + 1)) {
+                        let isWeekend = (d.getDay() === 0 || d.getDay() === 6 );
+
+                        if (isWeekend) {
+                            let weekend_tick_x = tick_x;
+                            const diffDays = Math.ceil(Math.abs(d - date) / (1000 * 60 * 60 * 24));
+                            const sign = (d >= date) ? 1 : -1;
+                            weekend_tick_x += sign * diffDays * this.options.column_width / 7;
+                            createSVG('path', {
+                                d: `M ${weekend_tick_x} ${tick_y} v ${tick_height}`,
+                                class: 'weekend-tick-highlight',
+                                append_to: this.layers.grid
+                            });
+                        }
+                    }
+                }
             }
             if (this.view_is(VIEW_MODE.MONTH)) {
                 tick_x +=
@@ -437,7 +477,7 @@ export default class Gantt {
     make_grid_highlights() {
         // highlight today's date
         if (this.view_is(VIEW_MODE.DAY)) {
-            const x =
+            let x =
                 date_utils.diff(date_utils.today(), this.gantt_start, 'hour') /
                 this.options.step *
                 this.options.column_width;
@@ -458,6 +498,24 @@ export default class Gantt {
                 class: 'today-highlight',
                 append_to: this.layers.grid
             });
+            if (this.options.weekend_highlight.includes(VIEW_MODE.DAY)) {
+                x = 0;
+                for (let date of this.dates) {
+                    let isWeekend = (date.getDay() == 0 || date.getDay() == 6);
+
+                    if (isWeekend) {
+                        createSVG('rect', {
+                            x,
+                            y,
+                            width,
+                            height,
+                            class: 'weekend-highlight',
+                            append_to: this.layers.grid
+                        });
+                    }
+                    x += this.options.column_width;
+                }
+            }
         }
     }
 
@@ -539,10 +597,7 @@ export default class Gantt {
                 date.getMonth() !== last_date.getMonth()
                     ? date_utils.format(date, 'MMMM', this.options.language)
                     : '',
-            Week_upper:
-                date.getMonth() !== last_date.getMonth()
-                    ? date_utils.format(date, 'MMMM', this.options.language)
-                    : '',
+            Week_upper: date_utils.getNumberOfWeek(date),
             Month_upper:
                 date.getFullYear() !== last_date.getFullYear()
                     ? date_utils.format(date, 'YYYY', this.options.language)
@@ -552,7 +607,6 @@ export default class Gantt {
                     ? date_utils.format(date, 'YYYY', this.options.language)
                     : ''
         };
-
         const base_pos = {
             x: i * this.options.column_width,
             lower_y: this.options.header_height,
@@ -567,7 +621,7 @@ export default class Gantt {
             Day_lower: this.options.column_width / 2,
             Day_upper: this.options.column_width * 30 / 2,
             Week_lower: 0,
-            Week_upper: this.options.column_width * 4 / 2,
+            Week_upper: 0,
             Month_lower: this.options.column_width / 2,
             Month_upper: this.options.column_width * 12 / 2,
             Year_lower: this.options.column_width / 2,
