@@ -240,7 +240,9 @@ export default class Gantt {
             this.gantt_end = date_utils.add(this.gantt_end, 4, 'year');
         } else {
             this.gantt_start = date_utils.add(this.gantt_start, -1, 'month');
+            this.gantt_start.setDate(this.gantt_start.getDate() - (this.gantt_start.getDay() + 6) % 7);
             this.gantt_end = date_utils.add(this.gantt_end, 1, 'month');
+            this.gantt_end.setDate(this.gantt_end.getDate() - (this.gantt_end.getDay() + 6) % 7);
         }
     }
 
@@ -545,6 +547,16 @@ export default class Gantt {
                     $upper_text.remove();
                 }
             }
+
+            if (date.uppermost_text) {
+                const $uppermost_text = createSVG('text', {
+                    x: date.uppermost_x,
+                    y: date.uppermost_y,
+                    innerHTML: date.uppermost_text,
+                    class: 'uppermost-text',
+                    append_to: this.layers.date
+                });
+            }
         }
     }
 
@@ -562,6 +574,8 @@ export default class Gantt {
         if (!last_date) {
             last_date = date_utils.add(date, 1, 'year');
         }
+        let midweek = new Date(date);
+        midweek.setDate(midweek.getDate() + 3);
         const date_text = {
             'Quarter Day_lower': date_utils.format(
                 date,
@@ -593,11 +607,10 @@ export default class Gantt {
                       ? date_utils.format(date, 'D MMM', this.options.language)
                       : date_utils.format(date, 'D', this.options.language)
                     : '',
-            Day_upper:
-                date.getMonth() !== last_date.getMonth()
-                    ? date_utils.format(date, 'MMMM', this.options.language)
-                    : '',
-            Week_upper: 'S ' + date_utils.getNumberOfWeek(date),
+            Day_uppermost: date.getDate() === 15 ?
+                date_utils.format(date, 'MMMM', this.options.language) : '',
+            Day_upper: date.getDay() === 1 ? '|' : (date.getDay() === 4 ? 'S ' + date_utils.getNumberOfWeek(date) : ''),
+            Week_upper: 'S ' + date_utils.getNumberOfWeek(midweek),
             Month_upper:
                 date.getFullYear() !== last_date.getFullYear()
                     ? date_utils.format(date, 'YYYY', this.options.language)
@@ -612,23 +625,21 @@ export default class Gantt {
             lower_y: this.options.header_height,
             upper_y: this.options.header_height - 25
         };
-
         const x_pos = {
             'Quarter Day_lower': this.options.column_width * 4 / 2,
             'Quarter Day_upper': 0,
             'Half Day_lower': this.options.column_width * 2 / 2,
             'Half Day_upper': 0,
             Day_lower: this.options.column_width / 2,
-            Day_upper: this.options.column_width * 30 / 2,
+            Day_upper: date.getDay() === 4 ? this.options.column_width : this.options.column_width / 2,
             Week_lower: 0,
-            Week_upper: 0,
+            Week_upper: this.options.column_width / 2,
             Month_lower: this.options.column_width / 2,
             Month_upper: this.options.column_width * 12 / 2,
             Year_lower: this.options.column_width / 2,
             Year_upper: this.options.column_width * 30 / 2
         };
-
-        return {
+        let date_info = {
             upper_text: date_text[`${this.options.view_mode}_upper`],
             lower_text: date_text[`${this.options.view_mode}_lower`],
             upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
@@ -636,6 +647,13 @@ export default class Gantt {
             lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
             lower_y: base_pos.lower_y
         };
+        if (this.view_is(VIEW_MODE.DAY)) {
+            date_info.uppermost_text = date_text[`${this.options.view_mode}_uppermost`];
+            date_info.uppermost_x = base_pos.x + x_pos[`${this.options.view_mode}_upper`];
+            date_info.uppermost_y = this.options.header_height - 35;
+            date_info.upper_y = this.options.header_height - 20;
+        }
+        return date_info;
     }
 
     make_bars() {
