@@ -236,6 +236,15 @@ export default {
         const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
         return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
     },
+
+    getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return weekNo;
+    },
+
     add(date, qty, scale) {
         qty = parseInt(qty, 10);
         const vals = [

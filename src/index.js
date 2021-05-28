@@ -436,7 +436,7 @@ export default class Gantt {
             }
             if (this.view_is(VIEW_MODE.WEEK)) {
                 if (today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth() &&
-                    date_utils.getNumberOfWeek(today) === date_utils.getNumberOfWeek(date)) {
+                    date_utils.getWeekNumber(today) === date_utils.getWeekNumber(date)) {
                     let today_tick_x = tick_x;
                     const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
                     const sign = (today >= date) ? 1 : -1;
@@ -576,6 +576,7 @@ export default class Gantt {
         }
         let midweek = new Date(date);
         midweek.setDate(midweek.getDate() + 3);
+        console.log(midweek);
         const date_text = {
             'Quarter Day_lower': date_utils.format(
                 date,
@@ -609,8 +610,8 @@ export default class Gantt {
                     : '',
             Day_uppermost: date.getDate() === 15 ?
                 date_utils.format(date, 'MMMM', this.options.language) : '',
-            Day_upper: date.getDay() === 1 ? '|' : (date.getDay() === 4 ? 'S ' + date_utils.getNumberOfWeek(date) : ''),
-            Week_upper: 'S ' + date_utils.getNumberOfWeek(midweek),
+            Day_upper: date.getDay() === 1 ? '|' : (date.getDay() === 4 ? 'S ' + date_utils.getWeekNumber(date) : ''),
+            Week_upper: 'S ' + date_utils.getWeekNumber(midweek),
             Month_upper:
                 date.getFullYear() !== last_date.getFullYear()
                     ? date_utils.format(date, 'YYYY', this.options.language)

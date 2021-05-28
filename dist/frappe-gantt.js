@@ -239,6 +239,15 @@ var date_utils = {
         const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
         return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
     },
+
+    getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return weekNo;
+    },
+
     add(date, qty, scale) {
         qty = parseInt(qty, 10);
         const vals = [
@@ -1497,7 +1506,7 @@ class Gantt {
             }
             if (this.view_is(VIEW_MODE.WEEK)) {
                 if (today.getFullYear() === date.getFullYear() && today.getMonth() === date.getMonth() &&
-                    date_utils.getNumberOfWeek(today) === date_utils.getNumberOfWeek(date)) {
+                    date_utils.getWeekNumber(today) === date_utils.getWeekNumber(date)) {
                     let today_tick_x = tick_x;
                     const diffDays = Math.ceil(Math.abs(today - date) / (1000 * 60 * 60 * 24));
                     const sign = (today >= date) ? 1 : -1;
@@ -1637,6 +1646,7 @@ class Gantt {
         }
         let midweek = new Date(date);
         midweek.setDate(midweek.getDate() + 3);
+        console.log(midweek);
         const date_text = {
             'Quarter Day_lower': date_utils.format(
                 date,
@@ -1670,8 +1680,8 @@ class Gantt {
                     : '',
             Day_uppermost: date.getDate() === 15 ?
                 date_utils.format(date, 'MMMM', this.options.language) : '',
-            Day_upper: date.getDay() === 1 ? '|' : (date.getDay() === 4 ? 'S ' + date_utils.getNumberOfWeek(date) : ''),
-            Week_upper: 'S ' + date_utils.getNumberOfWeek(midweek),
+            Day_upper: date.getDay() === 1 ? '|' : (date.getDay() === 4 ? 'S ' + date_utils.getWeekNumber(date) : ''),
+            Week_upper: 'S ' + date_utils.getWeekNumber(midweek),
             Month_upper:
                 date.getFullYear() !== last_date.getFullYear()
                     ? date_utils.format(date, 'YYYY', this.options.language)
