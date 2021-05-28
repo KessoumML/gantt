@@ -576,7 +576,6 @@ export default class Gantt {
         }
         let midweek = new Date(date);
         midweek.setDate(midweek.getDate() + 3);
-        console.log(midweek);
         const date_text = {
             'Quarter Day_lower': date_utils.format(
                 date,
