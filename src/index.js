@@ -526,6 +526,7 @@ export default class Gantt {
             createSVG('text', {
                 x: date.lower_x,
                 y: date.lower_y,
+                'data-date': date.date,
                 innerHTML: date.lower_text,
                 class: 'lower-text',
                 append_to: this.layers.date
@@ -645,7 +646,8 @@ export default class Gantt {
             upper_x: base_pos.x + x_pos[`${this.options.view_mode}_upper`],
             upper_y: base_pos.upper_y,
             lower_x: base_pos.x + x_pos[`${this.options.view_mode}_lower`],
-            lower_y: base_pos.lower_y
+            lower_y: base_pos.lower_y,
+            date: date.toLocaleDateString()
         };
         if (this.view_is(VIEW_MODE.DAY)) {
             date_info.uppermost_text = date_text[`${this.options.view_mode}_uppermost`];
