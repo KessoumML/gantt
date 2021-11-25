@@ -1,5 +1,5 @@
 {
-  "name": "enhanced-frappe-gantt",
+  "name": "extended-frappe-gantt",
   "version": "0.5.16",
   "description": "A simple, modern, interactive gantt library for the web",
   "main": "src/index.js",
